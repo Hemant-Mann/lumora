@@ -1,4 +1,4 @@
-import { hook, response } from '@tkit/core';
+import { hook, response } from '../core/index.js';
 import { shake, tryit, unique } from 'radash';
 
 export const DEFAULT_METHODS = [
