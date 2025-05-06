@@ -1,0 +1,32 @@
+{
+  "name": "lumora",
+  "version": "1.0.0",
+  "description": "JS framework",
+  "main": "core/index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hemant-Mann/lumora.git"
+  },
+  "keywords": [
+    "abstract",
+    "design",
+    "compose",
+    "exobse"
+  ],
+  "type": "module",
+  "author": "Hemant Mann",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Hemant-Mann/lumora/issues"
+  },
+  "homepage": "https://github.com/Hemant-Mann/lumora#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "radash": "^12.0.0"
+  }
+}
