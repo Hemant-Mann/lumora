@@ -1,6 +1,6 @@
 import { NextFunc } from '../core/index.js';
 import { isString } from 'radash';
-import { addNode, search } from './trie';
+import { addNode, search } from './trie.js';
 
 /**
  * @typedef {import('../core').NextFunc} NextFunc

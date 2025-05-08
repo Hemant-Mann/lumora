@@ -1,5 +1,5 @@
 import { trim } from 'radash';
-import { ParamParser } from './param-parser';
+import { ParamParser } from './param-parser.js';
 
 /**
  * @typedef {import('./types').HttpMethod} HttpMethod

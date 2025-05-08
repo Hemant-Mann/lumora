@@ -1,5 +1,5 @@
 import { NextFunc, Props } from '../core/index.js';
-import { router } from './router';
+import { router } from './router.js';
 
 /**
  * @typedef {import('../core').Props} Props
