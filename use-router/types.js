@@ -7,3 +7,4 @@
  * @typedef {('GET'|'POST'|'PUT'|'DELETE'|'OPTIONS'|'HEAD'|'PATCH'|'*')} HttpMethod
  * HTTP method string
  */
+export {};

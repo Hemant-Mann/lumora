@@ -9,7 +9,7 @@ import { isFunction, tryit } from 'radash';
  * @typedef {Object} ApiKeyAuth
  * @property {string} apiKey
  */
-export {ApiKeyAuth}
+export {};
 
 /**
  * @param {string | ((props: Props) => Promise<string>)} keyOrFunc
