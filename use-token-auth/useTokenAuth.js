@@ -1,4 +1,4 @@
-import { hook, NotAuthenticatedError, NotAuthorizedError } from '../core';
+import { hook, NotAuthenticatedError, NotAuthorizedError } from '../core/index.js';
 import jwt from 'jsonwebtoken';
 import { isArray, isFunction, tryit } from 'radash';
 import { Token } from './token';

@@ -1,4 +1,4 @@
-import { hook, response } from '../core';
+import { hook, response } from '../core/index.js';
 import { tryit } from 'radash';
 
 /**

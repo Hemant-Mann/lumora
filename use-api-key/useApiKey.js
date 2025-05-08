@@ -1,4 +1,4 @@
-import { hook, NotAuthenticatedError } from '../core';
+import { hook, NotAuthenticatedError } from '../core/index.js';
 import { isFunction, tryit } from 'radash';
 
 /**
@@ -15,6 +15,7 @@ import { isFunction, tryit } from 'radash';
  * @returns {(func: (props: Props & { auth: ApiKeyAuth }) => Promise<any>) => (props: Props) => Promise<any>}
  */
 export const useApiKey = (keyOrFunc) =>
+  
   hook(function useApiKey(func) {
     return async (props) => {
       const header = props.request.headers['x-api-key'];

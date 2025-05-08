@@ -1,4 +1,4 @@
-import { hook, NotAuthenticatedError } from '../core';
+import { hook, NotAuthenticatedError } from '../core/index.js';
 
 /**
  * @typedef {import('../core').Props} Props

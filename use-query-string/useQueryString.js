@@ -1,4 +1,4 @@
-import { BadRequestError } from '../core';
+import { BadRequestError } from '../core/index.js';
 import { isArray, isFunction, tryit } from 'radash';
 import { z as zod } from 'zod';
 

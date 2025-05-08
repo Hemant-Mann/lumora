@@ -1,4 +1,4 @@
-import { NextFunc, NotAuthorizedError } from '../core';
+import { NextFunc, NotAuthorizedError } from '../core/index.js';
 import { isArray, isFunction, sift } from 'radash';
 
 /**

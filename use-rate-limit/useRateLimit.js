@@ -1,4 +1,4 @@
-import { InternalServerError, NextFunc, RateLimitError, Response, response } from '../core';
+import { InternalServerError, NextFunc, RateLimitError, Response, response } from '../core/index.js';
 import dur from 'durhuman';
 import { isFunction, tryit } from 'radash';
 

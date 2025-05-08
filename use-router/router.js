@@ -1,4 +1,4 @@
-import { NextFunc } from '../core';
+import { NextFunc } from '../core/index.js';
 import { isString } from 'radash';
 import { addNode, search } from './trie';
 

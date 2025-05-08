@@ -1,4 +1,4 @@
-import { hook, response as toResponse } from '../core';
+import { hook, response as toResponse } from '../core/index.js';
 import { sort, tryit, unique } from 'radash';
 import URL from 'url';
 

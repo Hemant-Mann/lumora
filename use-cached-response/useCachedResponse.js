@@ -1,4 +1,4 @@
-import { hook } from '../core';
+import { hook } from '../core/index.js';
 import dur from 'durhuman';
 import { crush, mapValues, tryit } from 'radash';
 import * as uuid from 'uuid';
