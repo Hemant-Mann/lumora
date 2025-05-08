@@ -1,4 +1,4 @@
-import { ParamParser } from '../use-router/param-parser';
+import { ParamParser } from '../use-router/param-parser.js';
 
 /**
  * @typedef {import('../core').NextFunc} NextFunc
