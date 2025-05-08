@@ -1,7 +1,7 @@
 import { NotAuthorizedError } from '../core/index.js';
 import { isArray, isFunction, isString, sift } from 'radash';
-import cani from './cani';
-import * as perm from './permission';
+import cani from './cani.js';
+import * as perm from './permission.js';
 
 /**
  * @typedef {import('../core').NextFunc} NextFunc

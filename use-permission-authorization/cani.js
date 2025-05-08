@@ -1,6 +1,6 @@
 import { isArray, isString } from 'radash';
-import { parse } from './permission';
-import * as trie from './trie';
+import { parse } from './permission.js';
+import * as trie from './trie.js';
 
 /**
  * @typedef {import('./types').Permission} Permission
