@@ -70,7 +70,7 @@ export const response = (error, result) => {
  *
  * @example
  * ```js
- * const { res } from '@tkit/core'
+ * const { res } from 'lumora/core'
  *
  * const handler = async () => {
  *   return res(401, {
