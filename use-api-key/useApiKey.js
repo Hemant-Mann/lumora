@@ -2,7 +2,7 @@ import { hook, NotAuthenticatedError } from '../core';
 import { isFunction, tryit } from 'radash';
 
 /**
- * @typedef {import('@tkit/core').Props} Props
+ * @typedef {import('../core').Props} Props
  */
 
 /**

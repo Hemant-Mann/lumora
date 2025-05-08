@@ -24,7 +24,7 @@ export const DEFAULT_HEADERS = [
 ];
 
 /**
- * @typedef {import('@tkit/core').Props} Props
+ * @typedef {import('../core').Props} Props
  */
 
 /**
