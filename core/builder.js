@@ -11,7 +11,7 @@ import { omit, pick } from 'radash';
 export const chain = (funcs = []) => ({
   /**
    * @param {(func: (...args: any[]) => Promise<any>) => (...args: any[]) => Promise<any>} init
-   * @returns {Pick<TkitBuilder, 'init' | 'root'>}
+   * @returns {Pick<LumoBuilder, 'init' | 'root'>}
    */
   init: (init) => {
     return chain([...funcs, init]);
@@ -25,7 +25,7 @@ export const chain = (funcs = []) => ({
    * @template TCurrentRequest
    * @template TCurrentFramework
    * @param {(func: (props: import('./types.js').Props<TCurrentArgs, TCurrentServices, TCurrentAuth, TCurrentRequest, TCurrentFramework>) => Promise<any>) => (...args: TInitArgs) => Promise<any>} root
-   * @returns {Pick<TkitBuilder<TInitArgs, TCurrentArgs, TCurrentServices, TCurrentAuth, TCurrentRequest, TCurrentFramework>, 'hook' | 'endpoint'>}
+   * @returns {Pick<LumoBuilder<TInitArgs, TCurrentArgs, TCurrentServices, TCurrentAuth, TCurrentRequest, TCurrentFramework>, 'hook' | 'endpoint'>}
    */
   root: (root) => {
     return chain([...funcs, root]);
@@ -43,7 +43,7 @@ export const chain = (funcs = []) => ({
    * @template TRequiredRequest
    * @template TRequiredFramework
    * @param {(func: (props: import('./types.js').Props<TNextArgs, TNextServices, TNextAuth, TNextRequest, TNextFramework>) => Promise<any>) => (props: import('./types.js').Props<TRequiredArgs, TRequiredServices, TRequiredAuth, TRequiredRequest, TRequiredFramework>) => Promise<any>} hook
-   * @returns {Pick<TkitBuilder<KInitArgs, TNextArgs & KCurrentArgs, TNextServices & KCurrentServices, TNextAuth & KCurrentAuth, TNextRequest & KCurrentRequest, TNextFramework & KCurrentFramework>, 'hook' | 'endpoint'>}
+   * @returns {Pick<LumoBuilder<KInitArgs, TNextArgs & KCurrentArgs, TNextServices & KCurrentServices, TNextAuth & KCurrentAuth, TNextRequest & KCurrentRequest, TNextFramework & KCurrentFramework>, 'hook' | 'endpoint'>}
    */
   hook: (hook) => {
     return omit(

@@ -1,4 +1,4 @@
-import { hook, NotAuthenticatedError } from '@tkit/core';
+import { hook, NotAuthenticatedError } from '../core';
 import { isFunction, tryit } from 'radash';
 
 /**

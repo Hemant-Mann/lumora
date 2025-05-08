@@ -3,7 +3,7 @@ import { omit } from 'radash';
 /**
  * @template TMetadata
  */
-export class TkitError extends Error {
+export class LumoError extends Error {
   /**
    * @type {Omit<TMetadata, 'key' | 'cause'>}
    */
@@ -33,22 +33,22 @@ export class TkitError extends Error {
   }
 }
 
-export class BadRequestError extends TkitError {
+export class BadRequestError extends LumoError {
   status = 400;
 }
 
-export class NotAuthenticatedError extends TkitError {
+export class NotAuthenticatedError extends LumoError {
   status = 401;
 }
 
-export class NotAuthorizedError extends TkitError {
+export class NotAuthorizedError extends LumoError {
   status = 403;
 }
 
-export class RateLimitError extends TkitError {
+export class RateLimitError extends LumoError {
   status = 429;
 }
 
-export class InternalServerError extends TkitError {
+export class InternalServerError extends LumoError {
   status = 500;
 } 
