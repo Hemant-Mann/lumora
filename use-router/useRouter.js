@@ -1,4 +1,4 @@
-import { NextFunc, Props } from '../core/index.js';
+// import { Props } from '../core/index.js';
 import { router } from './router.js';
 
 /**
