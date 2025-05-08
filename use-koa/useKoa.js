@@ -1,4 +1,4 @@
-import { props, response } from '../core';
+import { props, response } from '../core/index.js';
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
 import { sift, try as tryit } from 'radash';
