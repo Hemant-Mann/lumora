@@ -1,4 +1,5 @@
 import { isNumber } from 'radash';
+import { LumoError } from './error.js';
 
 /**
  * There is a 1 in 1,000,000,000 chance that someone may
@@ -43,6 +44,18 @@ export const responseFromResult = (result) => {
  */
 export const responseFromError = (error) => {
   if (isResponse(error)) return error;
+  if (error instanceof LumoError) {
+    return {
+      ...defaultResponse,
+      status: error.status,
+      body: {
+        status: error.status,
+        message: error.message,
+        key: error.key,
+        // metadata: error.metadata
+      },
+    };
+  }
   // Else its an error we're not equipped to handle
   // return an unknown to the user.
   return {

@@ -1,7 +1,7 @@
-import { props, response } from '../core/index.js';
+import { props, LumoError, response } from '../core/index.js';
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
-import { sift, try as tryit } from 'radash';
+import { sift, try as tryit, isPromise } from 'radash';
 
 /**
  * @typedef {Object} KoaMiddlewareFunc
@@ -37,6 +37,10 @@ export async function withKoa(func, options, ctx, next) {
 
   const [error, result] = await tryit(async () => {
     const contextAfterMiddleware = await middleware(ctx, next);
+
+    if (isPromise(func)) {
+    	func = await func;
+    }
     return await func({
       ...props(makeRequest(contextAfterMiddleware)),
       framework: {
@@ -47,7 +51,7 @@ export async function withKoa(func, options, ctx, next) {
   })();
 
   if (error) {
-    console.error(error);
+  	// console.error(error)
   }
   const finalResponse = response(error, result);
   setResponse(ctx, finalResponse);
