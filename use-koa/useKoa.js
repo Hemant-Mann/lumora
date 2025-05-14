@@ -50,8 +50,8 @@ export async function withKoa(func, options, ctx, next) {
     });
   })();
 
-  if (error) {
-  	// console.error(error)
+  if (error && !(error instanceof LumoError)) {
+  	console.error(error)
   }
   const finalResponse = response(error, result);
   setResponse(ctx, finalResponse);
