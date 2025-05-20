@@ -1,6 +1,7 @@
 import { hook, response as toResponse } from '../core/index.js';
 import { sort, tryit, unique } from 'radash';
 import URL from 'url';
+import { getLogger } from 'advanced-logger';
 
 /**
  * @typedef {import('../core').Props} Props
@@ -25,7 +26,7 @@ import URL from 'url';
 /**
  * @typedef {Object} UseLoggingOptions
  * @property {(message: string) => string} [format] - A function to run on the message to prepare it for being logged
- * @property {{ log: (message: string) => void, error: (message: string) => void }} [logger] - Any object that can do logging
+ * @property {{ info: (message: string) => void, error: (message: string) => void }} [logger] - Any object that can do logging
  * @property {(tokens: TokenUtil, props: Props, error: any, response: any) => Record<string, () => string | object>} [tokens] - A function that returns a map of token functions
  */
 
@@ -78,7 +79,7 @@ export const useLogging = (template = '[:method] :path at :date(iso) -> :status 
       };
 
       const format = options.format ?? (message => message);
-      const logger = options.logger ?? console;
+      const logger = options.logger ?? getLogger();
 
       const message = Object.entries(tokens).reduce((msg, [key, fn]) => {
         return msg.replace(`:${key}`, fn());
@@ -87,7 +88,7 @@ export const useLogging = (template = '[:method] :path at :date(iso) -> :status 
       if (error) {
         logger.error(format(message));
       } else {
-        logger.log(format(message));
+        logger.info(format(message));
       }
 
       return response;

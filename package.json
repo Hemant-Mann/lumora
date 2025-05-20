@@ -27,6 +27,7 @@
     "jest": "^29.7.0"
   },
   "dependencies": {
+    "advanced-logger": "https://gitpkg.vercel.app/Hemant-Mann/logger/nodejs?main",
     "durhuman": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "radash": "^12.0.0",
