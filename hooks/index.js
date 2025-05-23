@@ -6,6 +6,7 @@ export * from '../use-catch/index.js';
 export * from '../use-cors/index.js';
 export * from '../use-headers/index.js';
 export * from '../use-json-body/index.js';
+export * from '../use-koa/index.js';
 // export * from '../use-lambda-tracer/index.js';
 export * from '../use-logging/index.js';
 export * from '../use-path-params/index.js';
