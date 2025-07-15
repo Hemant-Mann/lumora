@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "advanced-logger": "https://gitpkg.vercel.app/Hemant-Mann/logger/nodejs?main",
+    "cookie": "^1.0.2",
     "durhuman": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "radash": "^12.0.0",

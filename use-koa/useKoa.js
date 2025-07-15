@@ -1,7 +1,11 @@
-import { props, LumoError, response } from '../core/index.js';
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
+
+import cookie from 'cookie';
+import _ from 'lodash';
 import { sift, try as tryit, isPromise } from 'radash';
+
+import { props, LumoError, response } from '../core/index.js';
 
 /**
  * @typedef {Object} KoaMiddlewareFunc
@@ -65,16 +69,20 @@ export async function withKoa(func, options, ctx, next) {
 export const useKoa = (options = {}) => (func) => (ctx, next) =>
   withKoa(func, options, ctx, next);
 
-function setResponse(ctx, { status, headers, body }) {
+function setResponse(ctx, { status, headers, body, cookies }) {
   ctx.status = status;
   for (const [key, val] of Object.entries(headers)) {
     ctx.set(key, val);
   }
+  _.each(cookies, (cookie) => {
+    ctx.cookies.set(cookie.name, cookie.value, cookie.options || {});
+  });
   ctx.body = body;
 }
 
 const makeRequest = (ctx) => ({
   headers: ctx.headers,
+  cookies: cookie.parse(ctx.headers.cookie || ''),
   url: ctx.originalUrl,
   path: ctx.path,
   body: ctx.request.body,
