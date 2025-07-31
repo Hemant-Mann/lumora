@@ -86,6 +86,7 @@ const makeRequest = (ctx) => ({
   url: ctx.originalUrl,
   path: ctx.path,
   body: ctx.request.body,
+  files: ctx.request.files,
   method: ctx.method,
   query: ctx.query,
   ip: ctx.ip,
