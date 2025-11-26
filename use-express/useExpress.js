@@ -1,6 +1,7 @@
 import { props, response } from '../core/index.js';
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
+import cookie from 'cookie';
 import { sift, try as tryit } from 'radash';
 
 /**
@@ -69,16 +70,20 @@ export async function withExpress(func, options, req, res) {
 export const useExpress = (options = {}) => (func) => (req, res) =>
   withExpress(func, options, req, res);
 
-function setResponse(res, { status, headers, body }) {
+function setResponse(res, { status, headers, body, cookies }) {
   res.status(status);
   for (const [key, val] of Object.entries(headers)) {
     res.set(key, val);
   }
+  _.each(cookies, (cookie) => {
+    res.cookie(cookie.name, cookie.value, cookie.options || {});
+  });
   res.json(body);
 }
 
 const makeRequest = (req) => ({
   headers: req.headers,
+  cookies: cookie.parse(req.headers.cookie || ''),
   url: req.originalUrl,
   path: req.path,
   body: req.body,
