@@ -4,6 +4,7 @@ export * from '../use-cached-response/index.js';
 export * from '../use-catch/index.js';
 // export * from '../use-console-intercept/index.js';
 export * from '../use-cors/index.js';
+export * from '../use-express/index.js';
 export * from '../use-headers/index.js';
 export * from '../use-json-body/index.js';
 export * from '../use-koa/index.js';
