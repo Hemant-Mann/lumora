@@ -72,13 +72,18 @@ export const useExpress = (options = {}) => (func) => (req, res) =>
 
 function setResponse(res, { status, headers, body, cookies }) {
   res.status(status);
+  const isTextResponse = headers['content-type'] == 'text/plain' || headers['Content-Type'] == 'text/plain' || typeof body === 'string';
   for (const [key, val] of Object.entries(headers)) {
     res.set(key, val);
   }
   _.each(cookies, (cookie) => {
     res.cookie(cookie.name, cookie.value, cookie.options || {});
   });
-  res.json(body);
+  if (isTextResponse) {
+    res.send(body);
+  } else {
+    res.json(body);
+  }
 }
 
 const makeRequest = (req) => ({
