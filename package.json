@@ -30,6 +30,7 @@
     "cookie": "^1.0.2",
     "durhuman": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "radash": "^12.0.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.4"
