@@ -1,6 +1,6 @@
 {
   "name": "lumora",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "JS framework",
   "main": "core/index.js",
   "scripts": {
@@ -33,6 +33,6 @@
     "lodash": "^4.17.21",
     "radash": "^12.0.0",
     "uuid": "^11.1.0",
-    "zod": "^3.24.4"
+    "zod": "^4.1.13"
   }
 }
