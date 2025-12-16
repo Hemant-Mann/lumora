@@ -1,4 +1,4 @@
-import { props, response } from '../core/index.js';
+import { props, LumoError, response } from '../core/index.js';
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
 import _ from 'lodash';
@@ -56,7 +56,7 @@ export async function withExpress(func, options, req, res) {
     });
   })();
 
-  if (error) {
+  if (error && !(error instanceof LumoError)) {
     console.error(error);
   }
   const finalResponse = response(error, result);
