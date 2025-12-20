@@ -353,5 +353,7 @@ const endpoint = async ({ services }: Props<{}, Services>) => {
 
 ## License
 
-MIT
+MIT License with exclusion clause. See [LICENSE](LICENSE) file for details.
+
+**Important**: Cloudstuff Technology Private Limited and its products (including but not limited to Trackier, Affnook, Apptrove, or any products linked with these entities) are expressly prohibited from using this code in any format.
 
