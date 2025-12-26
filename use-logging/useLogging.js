@@ -1,6 +1,6 @@
 import { hook, response as toResponse } from '../core/index.js';
 import { sort, tryit, unique } from 'radash';
-import URL from 'url';
+import { URL } from 'url';
 import { getLogger } from './logger.js';
 
 /**
@@ -11,6 +11,7 @@ import { getLogger } from './logger.js';
  * @typedef {Object} TokenUtil
  * @property {() => string} url - The request URL
  * @property {() => string} domain - The request domain
+ * @property {() => string} search - The query string
  * @property {() => string} path - The request path
  * @property {() => string} method - The request method
  * @property {(unit: 's' | 'ms') => string} elapsed - The elapsed time in seconds or milliseconds
@@ -41,10 +42,15 @@ const Tokens = (props, error, response) => {
   const end = Date.now();
   const milliseconds = end - request.startedAt;
   const seconds = Math.round(milliseconds / 1000);
+
+  const urlObj = new URL(request.url);
+
   return {
     url: () => request.url,
-    domain: () => `${URL.parse(request.url).hostname}`,
+    domain: () => urlObj.hostname,
+    search: () => urlObj.search,
     path: () => request.path,
+    fullpath: () => `${request.path}${urlObj.search}`,
     method: () => request.method,
     elapsed: (unit = 'ms') =>
       unit === 'ms' ? `${milliseconds}ms` : `${seconds}s`,
@@ -67,7 +73,7 @@ const Tokens = (props, error, response) => {
  * @param {UseLoggingOptions} [options] - The logging options
  * @returns {(func: (props: Props) => Promise<any>) => (props: Props) => Promise<any>}
  */
-export const useLogging = (template = '[:method] :path at :date(iso) -> :status in :elapsed(ms)', options = {}) =>
+export const useLogging = (template = '[:method] :fullpath at :date(iso) -> :status in :elapsed(ms)', options = {}) =>
   hook(function useLogging(func) {
     return async props => {
       const [error, result] = await tryit(func)(props);
