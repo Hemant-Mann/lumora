@@ -1,6 +1,6 @@
 {
   "name": "lumora",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "JS framework",
   "main": "core/index.js",
   "scripts": {

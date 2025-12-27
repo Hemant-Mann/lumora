@@ -43,7 +43,9 @@ const Tokens = (props, error, response) => {
   const milliseconds = end - request.startedAt;
   const seconds = Math.round(milliseconds / 1000);
 
-  const urlObj = new URL(request.url);
+  const host = request.headers.host;
+  const fullurl = /^http/.test(request.url) ? request.url : `https://${host}${request.url}`;
+  const urlObj = new URL(fullurl);
 
   return {
     url: () => request.url,
