@@ -31,7 +31,7 @@ const withJsonBody = async (func, name, model, props) => {
     throw new BadRequestError(
       'Json body validation failed: ' +
         zerr.issues
-          .map(e => `${e.path.join('.')}: ${e.message.toLowerCase()}`)
+          .map(e => `${e.path.join('.')}: ${e.message}`)
           .join(', '),
       {
         key: 'err.json-body.failed',
