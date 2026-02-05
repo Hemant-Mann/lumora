@@ -34,7 +34,7 @@ export const withQueryString = async (func, model, props) => {
     throw new BadRequestError(
       'Query string validation failed: ' +
         zerr.issues
-          .map(e => `${e.path.join('.')}: ${e.message.toLowerCase()}`)
+          .map(e => `${e.path.join('.')}: ${e.message}`)
           .join(', '),
       {
         key: 'err.query-string.failed',

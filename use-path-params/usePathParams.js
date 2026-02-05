@@ -34,7 +34,7 @@ export const withPathParams = async (func, model, props) => {
     throw new BadRequestError(
       'Path parameter validation failed: ' +
         zerr.issues
-          .map(e => `${e.path.join('.')}: ${e.message.toLowerCase()}`)
+          .map(e => `${e.path.join('.')}: ${e.message}`)
           .join(', '),
       {
         key: 'err.path-params.failed',

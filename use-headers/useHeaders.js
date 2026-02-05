@@ -30,7 +30,7 @@ const withHeaders = async (func, model, props) => {
     throw new BadRequestError(
       'Header validation failed: ' +
         zerr.issues
-          .map(e => `${e.path.join('.')}: ${e.message.toLowerCase()}`)
+          .map(e => `${e.path.join('.')}: ${e.message}`)
           .join(', '),
       {
         key: 'err.headers.failed',
