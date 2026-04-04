@@ -45,6 +45,10 @@ export class NotAuthorizedError extends LumoError {
   status = 403;
 }
 
+export class DuplicateEntryError extends LumoError {
+  status = 409;
+}
+
 export class RateLimitError extends LumoError {
   status = 429;
 }
