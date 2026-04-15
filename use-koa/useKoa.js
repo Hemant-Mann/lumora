@@ -1,11 +1,11 @@
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
 
-import cookie from 'cookie';
-import _ from 'lodash';
-import { sift, try as tryit, isPromise } from 'radash';
+import cookie from "cookie";
+import _ from "lodash";
+import { sift, try as tryit, isPromise } from "radash";
 
-import { props, LumoError, response } from '../core/index.js';
+import { props, LumoError, response } from "../core/index.js";
 
 /**
  * @typedef {Object} KoaMiddlewareFunc
@@ -26,15 +26,15 @@ import { props, LumoError, response } from '../core/index.js';
  * @property {boolean} [skipCompression]
  */
 
-const applyJson = false
-const applyCompression = false
+const applyJson = false;
+const applyCompression = false;
 
 const makeMiddleware = (options) => {
   return sift([
     !options.skipJson && applyJson,
-    !options.skipCompression && applyCompression
+    !options.skipCompression && applyCompression,
   ]);
-}
+};
 
 export async function withKoa(func, options, ctx, next) {
   const middleware = composeMiddleware(...makeMiddleware(options));
@@ -43,19 +43,19 @@ export async function withKoa(func, options, ctx, next) {
     const contextAfterMiddleware = await middleware(ctx, next);
 
     if (isPromise(func)) {
-    	func = await func;
+      func = await func;
     }
     return await func({
       ...props(makeRequest(contextAfterMiddleware)),
       framework: {
         ctx,
-        next
-      }
+        next,
+      },
     });
   })();
 
   if (error && !(error instanceof LumoError)) {
-  	console.error(error)
+    console.error(error);
   }
   const finalResponse = response(error, result);
   setResponse(ctx, finalResponse);
@@ -66,8 +66,11 @@ export async function withKoa(func, options, ctx, next) {
  * @param {import('../core').NextFunc} func
  * @returns {Function}
  */
-export const useKoa = (options = {}) => (func) => (ctx, next) =>
-  withKoa(func, options, ctx, next);
+export const useKoa =
+  (options = {}) =>
+  (func) =>
+  (ctx, next) =>
+    withKoa(func, options, ctx, next);
 
 function setResponse(ctx, { status, headers, body, cookies }) {
   ctx.status = status;
@@ -78,11 +81,16 @@ function setResponse(ctx, { status, headers, body, cookies }) {
     ctx.cookies.set(cookie.name, cookie.value, cookie.options || {});
   });
   ctx.body = body;
+  if (body && typeof body.pipe === "function") {
+    ctx.res.on("close", () => {
+      if (!body.destroyed) body.destroy();
+    });
+  }
 }
 
 const makeRequest = (ctx) => ({
   headers: ctx.headers,
-  cookies: cookie.parse(ctx.headers.cookie || ''),
+  cookies: cookie.parse(ctx.headers.cookie || ""),
   url: ctx.originalUrl,
   path: ctx.path,
   body: ctx.request.body,
@@ -93,7 +101,7 @@ const makeRequest = (ctx) => ({
   startedAt: Date.now(),
   protocol: ctx.request.protocol,
   httpVersion: ctx.req.httpVersion,
-  params: ctx.params || {}  // Koa doesn't have params by default
+  params: ctx.params || {}, // Koa doesn't have params by default
 });
 
 /**

@@ -1,9 +1,9 @@
-import { props, LumoError, response } from '../core/index.js';
+import { props, LumoError, response } from "../core/index.js";
 // import makeCompressionMiddleware from 'compression';
 // import { json as makeJsonMiddleware } from 'express';
-import _ from 'lodash';
-import cookie from 'cookie';
-import { sift, try as tryit } from 'radash';
+import _ from "lodash";
+import cookie from "cookie";
+import { sift, try as tryit } from "radash";
 
 /**
  * @typedef {Object} ExpressMiddlewareFunc
@@ -32,15 +32,15 @@ import { sift, try as tryit } from 'radash';
  * @property {boolean} [skipCompression]
  */
 
-const applyJson = false
-const applyCompression = false
+const applyJson = false;
+const applyCompression = false;
 
 const makeMiddleware = (options) => {
   return sift([
     !options.skipJson && applyJson,
-    !options.skipCompression && applyCompression
+    !options.skipCompression && applyCompression,
   ]);
-}
+};
 
 export async function withExpress(func, options, req, res) {
   const middleware = composeMiddleware(...makeMiddleware(options));
@@ -51,8 +51,8 @@ export async function withExpress(func, options, req, res) {
       ...props(makeRequest(requestAfterMiddlware)),
       framework: {
         req,
-        res
-      }
+        res,
+      },
     });
   })();
 
@@ -60,7 +60,7 @@ export async function withExpress(func, options, req, res) {
     console.error(error);
   }
   const finalResponse = response(error, result);
-  setResponse(res, finalResponse);
+  setResponse({ req, res }, finalResponse);
   return finalResponse;
 }
 
@@ -68,18 +68,37 @@ export async function withExpress(func, options, req, res) {
  * @param {import('lumora/core').NextFunc} func
  * @returns {Function}
  */
-export const useExpress = (options = {}) => (func) => (req, res) =>
-  withExpress(func, options, req, res);
+export const useExpress =
+  (options = {}) =>
+  (func) =>
+  (req, res) =>
+    withExpress(func, options, req, res);
 
-function setResponse(res, { status, headers, body, cookies }) {
+function setResponse({ req, res }, { status, headers, body, cookies }) {
   res.status(status);
-  const isTextResponse = headers['content-type'] == 'text/plain' || headers['Content-Type'] == 'text/plain' || typeof body === 'string';
+
   for (const [key, val] of Object.entries(headers)) {
     res.set(key, val);
   }
+
   _.each(cookies, (cookie) => {
     res.cookie(cookie.name, cookie.value, cookie.options || {});
   });
+
+  const isStreamResponse = body && typeof body.pipe === "function";
+  if (isStreamResponse) {
+    body.pipe(res);
+    // Client disconnected → kill the stream
+    req.on("close", () => {
+      stream.destroy();
+    });
+    return;
+  }
+
+  const isTextResponse =
+    headers["content-type"] == "text/plain" ||
+    headers["Content-Type"] == "text/plain" ||
+    typeof body === "string";
   if (isTextResponse) {
     res.send(body);
   } else {
@@ -89,7 +108,7 @@ function setResponse(res, { status, headers, body, cookies }) {
 
 const makeRequest = (req) => ({
   headers: req.headers,
-  cookies: cookie.parse(req.headers.cookie || ''),
+  cookies: cookie.parse(req.headers.cookie || ""),
   url: req.originalUrl,
   path: req.path,
   body: req.body,
@@ -99,7 +118,7 @@ const makeRequest = (req) => ({
   startedAt: Date.now(),
   protocol: req.protocol,
   httpVersion: req.httpVersion,
-  params: req.params
+  params: req.params,
 });
 
 /**
