@@ -1,7 +1,7 @@
-import { hook } from '../core/index.js';
-import dur from 'durhuman';
-import { crush, mapValues, tryit } from 'radash';
-import * as uuid from 'uuid';
+import { hook } from "../core/index.js";
+import dur from "durhuman";
+import { crush, mapValues, tryit } from "radash";
+import * as uuid from "uuid";
 
 /**
  * @typedef {import('../core').Props} Props
@@ -33,22 +33,22 @@ import * as uuid from 'uuid';
  */
 
 const defaults = {
-  ttl: '1 hour',
-  toIdentity: a => a,
-  toCache: r => JSON.stringify(r),
-  toResponse: c => JSON.parse(c)
+  ttl: "1 hour",
+  toIdentity: (a) => a,
+  toCache: (r) => JSON.stringify(r),
+  toResponse: (c) => JSON.parse(c),
 };
 
 const hash = (obj) =>
   uuid.v5(
     JSON.stringify(
       mapValues(crush(obj), (value) => {
-        if (value === null) return '__null__';
-        if (value === undefined) return '__undefined__';
+        if (value === null) return "__null__";
+        if (value === undefined) return "__undefined__";
         return value;
-      })
+      }),
     ),
-    uuid.v5.DNS
+    uuid.v5.DNS,
   );
 
 /**
@@ -57,7 +57,7 @@ const hash = (obj) =>
  */
 export const useCachedResponse = (options) =>
   hook(function useCachedResponse(func) {
-    return async props => {
+    return async (props) => {
       const {
         key: prefix,
         toIdentity,
@@ -66,14 +66,14 @@ export const useCachedResponse = (options) =>
         ttl,
         logger,
         header,
-        value
+        value,
       } = { ...defaults, ...options };
 
       const identity = toIdentity(props);
       const cacheKey = `${prefix}:${hash(identity)}`;
 
       if (header && props.request.headers[header] === value) {
-        logger?.log('Cache skip requested');
+        logger?.log("Cache skip requested");
         return await func(props);
       }
 
@@ -84,24 +84,24 @@ export const useCachedResponse = (options) =>
       })();
 
       if (err) {
-        logger?.error('Cache read error', err);
+        logger?.error("Cache read error", err);
         return await func(props);
       }
 
       if (cached) {
-        logger?.log('Cache hit');
+        logger?.log("Cache hit");
         return cached;
       }
 
-      logger?.log('Cache miss');
+      logger?.log("Cache miss");
       const response = await func(props);
       const [setErr] = await tryit(async () => {
-        const seconds = dur(ttl).seconds();
+        const seconds = dur(ttl);
         await props.services.cache.set(cacheKey, toCache(response), seconds);
       })();
 
       if (setErr) {
-        logger?.error('Cache write error', setErr);
+        logger?.error("Cache write error", setErr);
       }
 
       return response;
