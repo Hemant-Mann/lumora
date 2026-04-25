@@ -14,4 +14,7 @@ export * from './postgres/types.js'
 export * as RedisClient from './redis/index.js'
 export * from './redis/types.js'
 
+export * as BucketClient from './bucket/index.js'
+export * from './bucket/types.js'
+
 export { default as Security } from './security.js'
