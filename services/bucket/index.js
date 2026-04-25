@@ -20,9 +20,6 @@ let defS3ClientMap = new Map()
  * @returns {import('@aws-sdk/client-s3').S3Client}
  */
 const makeS3Client = ({ endpoint, accessKeyId, secretAccessKey, region }) => {
-  if (!endpoint) {
-    throw new Error('endpoint is required for S3 client')
-  }
   if (!accessKeyId || !secretAccessKey) {
     throw new Error('accessKeyId and secretAccessKey are required for S3 client')
   }
@@ -30,15 +27,20 @@ const makeS3Client = ({ endpoint, accessKeyId, secretAccessKey, region }) => {
     throw new Error('region is required for S3 client')
   }
 
-  return new S3Client({
+  const clientConfig = {
     region,
-    endpoint,
-    forcePathStyle: true,
     credentials: {
       accessKeyId,
       secretAccessKey,
     },
-  })
+  }
+
+  if (endpoint) {
+    clientConfig.endpoint = endpoint
+    clientConfig.forcePathStyle = true
+  }
+
+  return new S3Client(clientConfig)
 }
 
 /**
