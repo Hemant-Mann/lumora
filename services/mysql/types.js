@@ -7,7 +7,7 @@
  * @typedef {Object} MysqlClient
  * @property {(model: string, query: object, opts?: object) => Promise<[Error|null, object|null]>} selectOne
  * @property {(model: string, id: string) => Promise<[Error|null, object|null]>} selectViaId
- * @property {(model: string, query: object, opts?: object) => Promise<[Error|null, object[]|null]>} selectMany
+ * @property {(model: string, query: object, opts?: { fields?: (string|{raw?:string,key?:string,alias?:string})[], groupBy?: string|string[]|{raw?:string,key?:string}, sort?: object, limit?: number, page?: number, maxTimeMS?: number }) => Promise<[Error|null, object[]|null]>} selectMany
  * @property {(model: string, query: object, opts?: object) => Promise<[Error|null, number|null]>} count
  * @property {(model: string, record: object) => Promise<[Error|null, object|null]>} insertOne
  * @property {(model: string, docs: object[], opts?: object) => Promise<[Error|null, number|null]>} insertMany

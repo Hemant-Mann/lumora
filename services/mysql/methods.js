@@ -301,7 +301,39 @@ export const selectMany = (db) => async (model, query, opts = {}) => {
     selectQuery = applyFilter(selectQuery, query)
 
     if (opts.fields && Array.isArray(opts.fields) && opts.fields.length > 0) {
-      selectQuery = selectQuery.select(opts.fields)
+      const fieldList = opts.fields.map((f) => {
+        if (typeof f === 'string') return f
+        if (f && typeof f === 'object') {
+          if (f.raw) return db.raw(f.raw)
+          if (f.key && f.alias) return `${f.key} as ${f.alias}`
+          if (f.key) return f.key
+        }
+        return f
+      })
+      selectQuery = selectQuery.select(fieldList)
+    }
+
+    // Apply GROUP BY
+    if (opts.groupBy) {
+      if (typeof opts.groupBy === 'string') {
+        selectQuery = selectQuery.groupBy(opts.groupBy)
+      } else if (Array.isArray(opts.groupBy)) {
+        for (const g of opts.groupBy) {
+          if (typeof g === 'string') {
+            selectQuery = selectQuery.groupBy(g)
+          } else if (g && typeof g === 'object') {
+            if (g.raw) {
+              selectQuery = selectQuery.groupByRaw(g.raw)
+            } else if (g.key) {
+              selectQuery = selectQuery.groupBy(g.key)
+            }
+          }
+        }
+      } else if (opts.groupBy.raw) {
+        selectQuery = selectQuery.groupByRaw(opts.groupBy.raw)
+      } else if (opts.groupBy.key) {
+        selectQuery = selectQuery.groupBy(opts.groupBy.key)
+      }
     }
 
     const limit = opts.per_page || opts.limit || 100
