@@ -1,5 +1,5 @@
 import { hook, response } from '../core/index.js';
-import { shake, tryit, unique } from 'radash';
+import { tryit, unique } from 'radash';
 
 export const DEFAULT_METHODS = [
   'GET',
@@ -7,7 +7,7 @@ export const DEFAULT_METHODS = [
   'PATCH',
   'DELETE',
   'POST',
-  'PUT'
+  'PUT',
 ];
 
 export const DEFAULT_HEADERS = [
@@ -20,7 +20,7 @@ export const DEFAULT_HEADERS = [
   'Content-MD5',
   'Content-Type',
   'Date',
-  'X-Api-Version'
+  'X-Api-Version',
 ];
 
 /**
@@ -85,22 +85,23 @@ const credentials = (config) => {
  */
 export const useCors = (config = {}) =>
   hook(function useCors(func) {
-    return async props => {
+    return async (props) => {
       const corsHeaders = {
         'Access-Control-Allow-Origin': origins(config),
         'Access-Control-Allow-Methods': methods(config),
-        'Access-Control-Allow-Headers': headers(config)
+        'Access-Control-Allow-Headers': headers(config),
       };
 
       if (config.credentials) {
         corsHeaders['Access-Control-Allow-Credentials'] = credentials(config);
       }
 
-      if (props.request.method === 'OPTIONS') {
-        return response(null, null, 204, corsHeaders);
-      }
-
       const [error, result] = await tryit(func)(props);
-      return response(error, result, undefined, corsHeaders);
+      let finalResp = response(error, result);
+      finalResp.headers = {
+        ...finalResp.headers,
+        ...corsHeaders,
+      };
+      return finalResp;
     };
   });

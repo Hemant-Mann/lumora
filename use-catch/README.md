@@ -30,7 +30,7 @@ You can add the `useCatch` hook anywhere, when an error is thrown below the hook
 ```ts
 import { compose } from 'radash'
 import type { Props } from 'lumora/core'
-import { useExpress } from '@exobaes/use-express'
+import { useExpress } from '@lumora/use-express'
 import { useCors } from 'lumora/use-cors'
 import { useCatch } from 'lumora/use-catch'
 

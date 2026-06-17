@@ -29,7 +29,7 @@ Add the `useCors` hook anywhere before your endpoint. When an `OPTIONS` request 
 ```ts
 import { compose } from 'radash'
 import type { Props } from 'lumora/core'
-import { useExpress } from '@exobaes/use-express'
+import { useExpress } from '@lumora/use-express'
 import { useCors } from 'lumora/use-cors'
 
 // Not called when request.method = 'OPTIONS'

@@ -1,4 +1,8 @@
-import { InternalServerError, RateLimitError, response } from '../core/index.js';
+import {
+  InternalServerError,
+  RateLimitError,
+  response,
+} from '../core/index.js';
 import dur from 'durhuman';
 import { isFunction, tryit } from 'radash';
 
@@ -43,31 +47,38 @@ import { isFunction, tryit } from 'radash';
  * @returns {Promise<Response>}
  */
 export async function withRateLimiting(func, options, props) {
-  const { key: prefix, limit: limitFn, toIdentity, logger, strict = true, store: storeFn } = options;
+  const {
+    key: prefix,
+    limit: limitFn,
+    toIdentity,
+    logger,
+    strict = true,
+    store: storeFn,
+  } = options;
   const key = `${prefix}.${toIdentity(props)}`;
   const services = props.services || {};
-  
+
   if (!storeFn && !services.store) {
     logger?.error(
       '[useRateLimit] Misconfigured, a store must be passed either in the services or options',
       {
         options: { store: storeFn },
-        services: { store: services.store }
-      }
+        services: { store: services.store },
+      },
     );
     throw new InternalServerError(
       'useRateLimit hook requires a store to persist activity',
       {
-        key: 'exo.rate-limit.misconfig'
-      }
+        key: 'lumora.rate-limit.misconfig',
+      },
     );
   }
 
   const limit = await Promise.resolve(
-    isFunction(limitFn) ? limitFn(props) : limitFn
+    isFunction(limitFn) ? limitFn(props) : limitFn,
   );
   const store = await Promise.resolve(
-    storeFn ? (isFunction(storeFn) ? storeFn(props) : storeFn) : services.store
+    storeFn ? (isFunction(storeFn) ? storeFn(props) : storeFn) : services.store,
   );
 
   const [err, record] = await tryit(store.inc)(key);
@@ -77,9 +88,9 @@ export async function withRateLimiting(func, options, props) {
     throw new InternalServerError(
       'useRateLimit store threw an error while executing incrament operation',
       {
-        key: 'exo.rate-limit.misconfig',
-        cause: err
-      }
+        key: 'lumora.rate-limit.misconfig',
+        cause: err,
+      },
     );
   }
 
@@ -89,8 +100,8 @@ export async function withRateLimiting(func, options, props) {
     throw new InternalServerError(
       'useRateLimit did not return a valid record',
       {
-        key: 'exo.rate-limit.misconfig'
-      }
+        key: 'lumora.rate-limit.misconfig',
+      },
     );
   }
 
@@ -101,7 +112,7 @@ export async function withRateLimiting(func, options, props) {
   const headers = {
     'X-RateLimit-Limit': `${limit.max}`,
     'X-RateLimit-Remaining': `${limit.max - count}`,
-    'X-RateLimit-Reset': `${dur(limit.window, 'milliseconds') - elapsed}`
+    'X-RateLimit-Reset': `${dur(limit.window, 'milliseconds') - elapsed}`,
   };
 
   if (windowHasPassed) {
@@ -113,10 +124,10 @@ export async function withRateLimiting(func, options, props) {
         count,
         timestamp,
         max: limit.max,
-        window: limit.window
+        window: limit.window,
       });
       throw new RateLimitError('Too Many Requests', {
-        key: 'exo.rate-limit.exceeded'
+        key: 'lumora.rate-limit.exceeded',
       });
     }
   }
@@ -127,8 +138,8 @@ export async function withRateLimiting(func, options, props) {
     ...res,
     headers: {
       ...res.headers,
-      ...headers
-    }
+      ...headers,
+    },
   };
   return responseWithHeaders;
 }
