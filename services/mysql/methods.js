@@ -166,6 +166,73 @@ const applyFilter = (query, filter) => {
   return query
 }
 
+// Per-connection PK cache: keyed by the knex client instance (one per
+// host+database pool, and shared by that pool's transactions), with an inner
+// table→PK map. Keying by client — rather than a bare table name — prevents
+// cross-contamination when the same process talks to multiple databases/hosts
+// that share a table name. A WeakMap lets ephemeral (e.g. per-tenant) connections
+// be garbage-collected instead of leaking cache entries.
+const primaryKeyCache = new WeakMap()
+
+/**
+ * Resolves a table's primary key column(s) and any auto-increment column,
+ * cached per connection+table. MySQL has no RETURNING clause, so writes that
+ * need the stored row re-select by primary key.
+ * @param {import('knex').Knex} db - Knex instance (or transaction)
+ * @param {string} tableName
+ * @returns {Promise<{ columns: string[], autoIncrement: string|null }>}
+ */
+const getPrimaryKey = async (db, tableName) => {
+  const client = db?.client
+  const tableCache = client ? primaryKeyCache.get(client) : null
+  if (tableCache?.has(tableName)) return tableCache.get(tableName)
+
+  const rows = await db('information_schema.columns')
+    .select('COLUMN_NAME as columnName', 'EXTRA as extra')
+    .whereRaw('TABLE_SCHEMA = DATABASE()')
+    .andWhere('TABLE_NAME', tableName)
+    .andWhere('COLUMN_KEY', 'PRI')
+
+  const pk = {
+    columns: rows.map((r) => r.columnName),
+    autoIncrement: rows.find((r) => String(r.extra).toLowerCase().includes('auto_increment'))?.columnName || null,
+  }
+
+  if (client) {
+    const cache = tableCache || new Map()
+    cache.set(tableName, pk)
+    primaryKeyCache.set(client, cache)
+  }
+  return pk
+}
+
+/**
+ * Builds an equality filter that uniquely identifies a just-inserted row,
+ * preferring the primary-key values present in `record` and falling back to the
+ * auto-increment insertId. Returns null when the row cannot be identified.
+ * @param {import('knex').Knex} db - Knex instance
+ * @param {string} tableName
+ * @param {object} record - the inserted record
+ * @param {number|undefined} insertId - knex insert id (auto-increment tables)
+ * @returns {Promise<object|null>}
+ */
+const insertedRowFilter = async (db, tableName, record, insertId) => {
+  const pk = await getPrimaryKey(db, tableName)
+  if (pk.columns.length === 0) return null
+
+  const filter = {}
+  for (const col of pk.columns) {
+    if (record[col] !== undefined && record[col] !== null) {
+      filter[col] = record[col]
+    } else if (col === pk.autoIncrement && insertId) {
+      filter[col] = insertId
+    } else {
+      return null
+    }
+  }
+  return filter
+}
+
 /**
  * Inserts a single record into the database
  * @param {import('knex').Knex} db - Knex instance
@@ -175,8 +242,14 @@ export const insertOne = (db) => async (model, record) => {
   const tableName = getTableName(model)
 
   const [err, result] = await tryit(async () => {
-    const rows = await db(tableName).insert(record).returning('*')
-    return rows[0] || null
+    // MySQL has no RETURNING — insert yields [insertId], so re-select the stored row.
+    const [insertId] = await db(tableName).insert(record)
+
+    const filter = await insertedRowFilter(db, tableName, record, insertId)
+    if (!filter) return null
+
+    const row = await db(tableName).where(filter).first()
+    return row || null
   })()
 
   if (err) return [err, null]
@@ -384,8 +457,9 @@ export const updateMany = (db) => async (model, query, updateFields, opts = {}) 
     const timeout = opts.maxTimeMS || DEFAULT_MAX_TIME_MS
     updateQuery = updateQuery.timeout(timeout)
 
-    const rowCount = await updateQuery.update(updateFields).returning('*')
-    return { rowCount: Array.isArray(rowCount) ? rowCount.length : rowCount, rows: Array.isArray(rowCount) ? rowCount : [] }
+    // MySQL has no RETURNING; update yields the affected row count.
+    const affected = await updateQuery.update(updateFields)
+    return { rowCount: affected, rows: [] }
   })()
 
   if (err) return [err, null]
@@ -480,8 +554,8 @@ export const bulkWrite = (db) => async (model, ops, opts = {}) => {
     await db.transaction(async (trx) => {
       for (const op of ops) {
         if (op.insertOne) {
-          const rows = await trx(tableName).insert(op.insertOne.document).returning('*')
-          if (rows && rows.length > 0) results.insertedCount++
+          await trx(tableName).insert(op.insertOne.document)
+          results.insertedCount++
         } else if (op.updateOne) {
           let updateQuery = trx(tableName)
           updateQuery = applyFilter(updateQuery, op.updateOne.filter)
@@ -505,12 +579,11 @@ export const bulkWrite = (db) => async (model, ops, opts = {}) => {
           }
         } else if (op.upsert) {
           const allData = { ...op.upsert.filter, ...op.upsert.update }
-          const rows = await trx(tableName)
+          await trx(tableName)
             .insert(allData)
             .onConflict()
             .merge()
-            .returning('*')
-          if (rows && rows.length > 0) results.upsertedCount++
+          results.upsertedCount++
         }
       }
     })
@@ -552,33 +625,44 @@ export const selectOneAndUpdate = (db) => async (model, query, updateData, opts 
   const tableName = getTableName(model)
 
   const [err, result] = await tryit(async () => {
-    let updateQuery = db(tableName)
-
-    updateQuery = applyFilter(updateQuery, query)
-
     const updateObj = {}
+    if (updateData.set) {
+      Object.assign(updateObj, updateData.set)
+    }
+    if (Object.keys(updateObj).length === 0 && !updateData.increment) {
+      throw new Error('Update data is empty')
+    }
+
+    const timeout = opts.maxTimeMS || DEFAULT_MAX_TIME_MS
+
+    // MySQL has no RETURNING. Target one matching row by primary key, update it,
+    // then re-select to return the updated row (findOneAndUpdate semantics).
+    const pk = await getPrimaryKey(db, tableName)
+    const hasPk = pk.columns.length > 0
+
+    let findQuery = applyFilter(db(tableName), query).timeout(timeout)
+    if (hasPk) findQuery = findQuery.select(pk.columns)
+    const target = await findQuery.first()
+    if (!target) return null
+
+    const pkFilter = {}
+    for (const col of pk.columns) pkFilter[col] = target[col]
+
+    let updateQuery = hasPk ? db(tableName).where(pkFilter) : applyFilter(db(tableName), query)
     if (updateData.increment) {
       for (const [key, value] of Object.entries(updateData.increment)) {
         updateQuery = updateQuery.increment(key, value)
       }
     }
-    if (updateData.set) {
-      Object.assign(updateObj, updateData.set)
-    }
-
-    if (Object.keys(updateObj).length === 0 && !updateData.increment) {
-      throw new Error('Update data is empty')
-    }
-
     if (Object.keys(updateObj).length > 0) {
       updateQuery = updateQuery.update(updateObj)
     }
+    await updateQuery.timeout(timeout)
 
-    const timeout = opts.maxTimeMS || DEFAULT_MAX_TIME_MS
-    updateQuery = updateQuery.timeout(timeout)
-
-    const rows = await updateQuery.returning('*')
-    return rows[0] || null
+    // Without a primary key the updated row cannot be reliably re-selected.
+    if (!hasPk) return null
+    const row = await db(tableName).where(pkFilter).first()
+    return row || null
   })()
 
   if (err) return [err, null]
