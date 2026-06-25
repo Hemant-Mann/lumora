@@ -1,5 +1,6 @@
-import { hook, response } from '../core/index.js';
+import _ from 'lodash';
 import { tryit, unique } from 'radash';
+import { hook, response } from '../core/index.js';
 
 export const DEFAULT_METHODS = [
   'GET',
@@ -34,13 +35,21 @@ export const DEFAULT_HEADERS = [
  * @property {'*' | string[]} [methods] - List of HTTP methods the browser should allow to make a request to the resource you're securing.
  * @property {boolean} [strict] - If true your provided options will be used exclusively. If false (default) your provided options will be appended to the default list of values.
  * @property {boolean} [credentials] - If true, the Access-Control-Allow-Credentials will be set to true. Defaults to false.
+ * @property {boolean} [allowOriginReferer] - If true, the Access-Control-Allow-Origin will be set to the referrer header to allow dynamic origin in CORS
  */
 
 /**
  * @param {UseCorsConfig} config
  * @returns {string}
  */
-const origins = (config) => {
+const origins = (config, props) => {
+  if (
+    config.allowOriginReferer &&
+    props.request?.headers?.referer &&
+    !config.origins
+  ) {
+    return _.trimEnd(props.request?.headers?.referer, '/');
+  }
   if (!config.origins) return '*';
   if (config.origins === '*') return '*';
   return config.origins.join(', ');
@@ -87,7 +96,7 @@ export const useCors = (config = {}) =>
   hook(function useCors(func) {
     return async (props) => {
       const corsHeaders = {
-        'Access-Control-Allow-Origin': origins(config),
+        'Access-Control-Allow-Origin': origins(config, props),
         'Access-Control-Allow-Methods': methods(config),
         'Access-Control-Allow-Headers': headers(config),
       };
