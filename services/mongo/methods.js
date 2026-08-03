@@ -13,6 +13,14 @@ const DEFAULT_MAX_TIME_MS = 5000
 const getModel = (conn, m) => conn.model(m)
 
 /**
+ * Regex operator values are raw user search input — escape them so metacharacters
+ * (or a trailing backslash) can't build an invalid/catastrophic pattern.
+ * @param {*} v
+ * @returns {string}
+ */
+const escapeRx = (v) => _.escapeRegExp(String(v ?? ''))
+
+/**
  * Transforms filter objects with custom operators to MongoDB query format
  * @param {Object} filter - The filter object with custom operators
  * @returns {Object} - MongoDB query object
@@ -56,7 +64,7 @@ const transformFilter = (filter) => {
 					break;
 				case 'REGEX':
 				case 'LIKE':
-					transformed[key] = { $regex: value.value, $options: value.options || 'i' };
+					transformed[key] = { $regex: escapeRx(value.value), $options: value.options || 'i' };
 					break;
 				case 'BETWEEN':
 					if (Array.isArray(value.value) && value.value.length === 2) {
@@ -118,16 +126,16 @@ const transformFilter = (filter) => {
 					transformed[key] = { $nin: [null, '', [], {}] };
 					break;
 				case 'STARTS_WITH':
-					transformed[key] = { $regex: `^${value.value}`, $options: value.options || 'i' };
+					transformed[key] = { $regex: `^${escapeRx(value.value)}`, $options: value.options || 'i' };
 					break;
 				case 'ENDS_WITH':
-					transformed[key] = { $regex: `${value.value}$`, $options: value.options || 'i' };
+					transformed[key] = { $regex: `${escapeRx(value.value)}$`, $options: value.options || 'i' };
 					break;
 				case 'CONTAINS':
-					transformed[key] = { $regex: value.value, $options: value.options || 'i' };
+					transformed[key] = { $regex: escapeRx(value.value), $options: value.options || 'i' };
 					break;
 				case 'NOT_CONTAINS':
-					transformed[key] = { $not: { $regex: value.value, $options: value.options || 'i' } };
+					transformed[key] = { $not: { $regex: escapeRx(value.value), $options: value.options || 'i' } };
 					break;
 				case 'IN_RANGE':
 					if (Array.isArray(value.value) && value.value.length === 2) {
@@ -226,6 +234,9 @@ export const updateOne = (conn) => async (model, query, updateObj) => {
 	if (updateObj.set) {
 		updateData.$set = updateObj.set;
 	}
+	if (updateObj.unset) {
+		updateData.$unset = updateObj.unset;
+	}
 	const q = transformFilter(query);
 	const r = m.updateOne(q, updateData);
 	const [err, result] = await tryit(() => {
@@ -242,9 +253,9 @@ export const updateOne = (conn) => async (model, query, updateObj) => {
 }
 
 /**
- * Updates a single record in the database
+ * Upserts a single record in the database
  * @param {import('mongoose').Connection} conn
- * @returns {(model: string, query: object, updateData: object) => Promise<[Error|null, boolean]>} A function that updates a record in the database.
+ * @returns {(model: string, query: object, insertData: object) => Promise<[Error|null, boolean]>} A function that upserts a record in the database.
  */
 export const upsert = (conn) => async (model, query, insertData) => {
 	const m = getModel(conn, model)
@@ -292,7 +303,6 @@ export const selectOne = (conn) => async (model, query, opts = {}) => {
  * @returns {(model: string, id: string) => Promise<[Error|null, object|null]>} A function that finds a record by id in the database.
  */
 export const selectViaId = (conn) => async (model, id) => {
-	const m = getModel(conn, model)
 	return selectOne(conn)(model, { _id: id })
 }
 
@@ -385,7 +395,7 @@ export const deleteMany = (conn) => async (model, query) => {
  */
 export const countDocuments = (conn) => async (model, query) => {
 	const m = getModel(conn, model)
-	let q = transformFilter(query);
+	const q = transformFilter(query);
 
 	const [err, result] = await tryit(() => {
 		return m.countDocuments(q).maxTimeMS(DEFAULT_MAX_TIME_MS)
@@ -437,6 +447,9 @@ export const selectOneAndUpdate = (conn) => async (model, query, updateData, opt
 		}
 		if (updateData.set) {
 			updateOpts.$set = updateData.set
+		}
+		if (updateData.unset) {
+			updateOpts.$unset = updateData.unset
 		}
 		opts.new = true
 		return m.findOneAndUpdate(q, updateOpts, opts).lean().exec()
