@@ -23,9 +23,9 @@ export class LumoError extends Error {
 
   /**
    * @param {string} message
-   * @param {TMetadata & { key: string; cause?: Error }} metadata
+   * @param {TMetadata & { key?: string; cause?: Error }} [metadata]
    */
-  constructor(message, metadata) {
+  constructor(message, metadata = {}) {
     super(message);
     this.cause = metadata.cause;
     this.key = metadata.key;
