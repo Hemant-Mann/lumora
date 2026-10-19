@@ -7,8 +7,8 @@ const DEFAULT_MAX_TIME_MS = 5000
  * @param {string} model
  * @returns {string}
  */
-const getTableName = (model) => {
-  return model.toLowerCase().replace(/([A-Z])/g, '_$1').toLowerCase()
+export const getTableName = (model) => {
+  return model.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
 }
 
 /**
