@@ -30,13 +30,12 @@ const applyFilter = (query, filter) => {
 
 			switch (operator) {
 				case 'IN':
-					if (Array.isArray(val) && val.length > 0) {
-						query.whereIn(key, val)
-					}
+					// An empty list matches nothing (knex writes 1 = 0)
+					query.whereIn(key, Array.isArray(val) ? val : [val])
 					break
 				case 'NIN':
 				case 'NOT_IN':
-					if (Array.isArray(val) && val.length > 0) {
+					if (Array.isArray(val)) {
 						query.whereNotIn(key, val)
 					} else {
 						query.whereNot(key, val)
@@ -213,10 +212,8 @@ const applyFilter = (query, filter) => {
 					break
 			}
 		} else if (Array.isArray(value)) {
-			// Handle array values (default to IN behavior)
-			if (value.length > 0) {
-				query.whereIn(key, value)
-			}
+			// Handle array values (default to IN behavior). An empty list matches nothing (knex writes 1 = 0)
+			query.whereIn(key, value)
 		} else if (value && typeof value === 'object') {
 			// Recursively handle nested objects (AND logic)
 			query.where(function() {

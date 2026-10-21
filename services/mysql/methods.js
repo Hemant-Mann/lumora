@@ -30,13 +30,12 @@ const applyFilter = (query, filter) => {
 
       switch (operator) {
         case 'IN':
-          if (Array.isArray(val) && val.length > 0) {
-            query.whereIn(key, val)
-          }
+          // An empty list matches nothing (knex writes 1 = 0)
+          query.whereIn(key, Array.isArray(val) ? val : [val])
           break
         case 'NIN':
         case 'NOT_IN':
-          if (Array.isArray(val) && val.length > 0) {
+          if (Array.isArray(val)) {
             query.whereNotIn(key, val)
           } else {
             query.whereNot(key, val)
@@ -151,9 +150,8 @@ const applyFilter = (query, filter) => {
           break
       }
     } else if (Array.isArray(value)) {
-      if (value.length > 0) {
-        query.whereIn(key, value)
-      }
+      // An empty list matches nothing (knex writes 1 = 0), so { _id: [] } never means every row
+      query.whereIn(key, value)
     } else if (value && typeof value === 'object') {
       query.where(function () {
         applyFilter(this, value)

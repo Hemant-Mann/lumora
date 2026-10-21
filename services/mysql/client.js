@@ -53,6 +53,7 @@ const createMysqlClient = (conn) => {
           const trxClient = {
             selectOne: selectOneMysql(trx),
             selectMany: selectManyMysql(trx),
+            count: countMysql(trx),
             insertOne: insertOneMysql(trx),
             upsert: upsertMysql(trx),
             updateOne: updateOneMysql(trx),

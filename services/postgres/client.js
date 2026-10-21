@@ -40,6 +40,7 @@ const createPostgresClient = (conn) => {
 					const trxClient = {
 						selectOne: selectOnePostgres(trx),
 						selectMany: selectManyPostgres(trx),
+						count: countPostgres(trx),
 						insertOne: insertOnePostgres(trx),
 						upsert: upsertPostgres(trx),
 						updateOne: updateOnePostgres(trx),
