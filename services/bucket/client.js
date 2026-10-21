@@ -1,5 +1,6 @@
 import { tryit } from 'radash'
 import { imageSize } from 'image-size'
+import { contentDisposition } from './disposition.js'
 
 const GCS_URL = 'https://storage.googleapis.com/'
 
@@ -90,9 +91,9 @@ const metadata = (storage) => async ({ bucketName, fileName }) => {
 /**
  * Create a signed URL for downloading from GCP bucket
  * @param {import('@google-cloud/storage').Storage} storage - Google Cloud Storage client
- * @return {(args: { bucketName: string, fileName: string, expiresIn?: number }) => Promise<[Error|null, string|null]>}
+ * @return {(args: { bucketName: string, fileName: string, expiresIn?: number, downloadName?: string }) => Promise<[Error|null, string|null]>}
  */
-const download = (storage) => async ({ bucketName, fileName, expiresIn = 3600 }) => {
+const download = (storage) => async ({ bucketName, fileName, expiresIn = 3600, downloadName }) => {
   const [error, url] = await tryit(async () => {
     const bucket = storage.bucket(bucketName)
     const file = bucket.file(fileName)
@@ -101,6 +102,7 @@ const download = (storage) => async ({ bucketName, fileName, expiresIn = 3600 })
       version: 'v4',
       action: 'read',
       expires: Date.now() + (expiresIn * 1000),
+      ...(downloadName && { responseDisposition: contentDisposition(downloadName) }),
     })
 
     return signedUrl

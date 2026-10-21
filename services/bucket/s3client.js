@@ -8,6 +8,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { contentDisposition } from './disposition.js'
 
 const IMAGE_BYTES_RANGE = 'bytes=0-65535'
 
@@ -74,13 +75,14 @@ const upload = (s3) => async ({ bucketName, fileName, expiresIn = 3600, contentT
 /**
  * Create a signed URL for downloading from an S3 compatible bucket
  * @param {import('@aws-sdk/client-s3').S3Client} s3 - S3 client
- * @return {(args: { bucketName: string, fileName: string, expiresIn?: number }) => Promise<[Error|null, string|null]>}
+ * @return {(args: { bucketName: string, fileName: string, expiresIn?: number, downloadName?: string }) => Promise<[Error|null, string|null]>}
  */
-const download = (s3) => async ({ bucketName, fileName, expiresIn = 3600 }) => {
+const download = (s3) => async ({ bucketName, fileName, expiresIn = 3600, downloadName }) => {
   const [error, url] = await tryit(async () => {
     const command = new GetObjectCommand({
       Bucket: bucketName,
       Key: fileName,
+      ...(downloadName && { ResponseContentDisposition: contentDisposition(downloadName) }),
     })
     return await getSignedUrl(s3, command, { expiresIn })
   })()
